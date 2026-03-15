@@ -2,40 +2,27 @@ from math import ceil, inf
 
 import pandas as pd
 from typing import Tuple
-import argparse
 import networkx as nx
 
 from consts import ACTORS, KEVIN_BACON_ID, MOVIES, MOVIES_ACTORS, PROCESSED_DATASET
 
 
-parser = argparse.ArgumentParser(description="Bacon Distance")
-parser.add_argument(
-    "-n", "--name", help="The actor name", dest="actor_name", type=str, required=True
-)
-
-
-def main() -> None:
+def init_server() -> Tuple[pd.DataFrame, nx.Graph]:
     """
-    The main entry point.
-    Given a name to search the bacon distance, finds and returns the distance.
+    Init the data frames and the graphs
+    Returns:
+        Tuple[pd.DataFrame, nx.Graph]: The actors df and the initalized graph.
     """
-    args = parser.parse_args()
-    actor_name = args.actor_name
     actors, movies, movies_actors = load_data(
         PROCESSED_DATASET.joinpath(ACTORS),
         PROCESSED_DATASET.joinpath(MOVIES),
         PROCESSED_DATASET.joinpath(MOVIES_ACTORS),
     )
-    actor_id = get_actor_id_from_name(actor_name, actors)
     g = nx.Graph()
     add_actors(g, actors)
     add_movies(g, movies)
     add_edges(g, movies_actors)
-    distance = calculate_bacon_distance(g, actor_id)
-    if distance == inf:
-        print(f"There is no path from {actor_name} to Kevin Bacon!")
-    else:
-        print(f"The distacne from Kevin Bacon to {actor_name} is: {distance}")
+    return actors, g
 
 
 def calculate_bacon_distance(g: nx.Graph, source: str) -> float:
@@ -50,13 +37,12 @@ def calculate_bacon_distance(g: nx.Graph, source: str) -> float:
     """
     try:
         path = list(nx.shortest_path(g, source, KEVIN_BACON_ID))
-        print(path)
         return ceil((len(path) / 2)) - 1
     except nx.NetworkXNoPath:
         return inf
 
 
-def get_actor_id_from_name(name: str, actors: pd.DataFrame) -> str:
+def get_actor_id_from_name(actors: pd.DataFrame, name: str) -> str:
     """
     Given a name to serach returns the id of the actor from the actors data frame.
     Args:
@@ -125,7 +111,3 @@ def load_data(actors: str, movies: str, movies_actors: str) -> Tuple[pd.DataFram
     movies_df = pd.read_csv(movies, sep="\t")
     movies_actors_df = pd.read_csv(movies_actors, sep="\t")
     return actors_df, movies_df, movies_actors_df
-
-
-if __name__ == "__main__":
-    main()
