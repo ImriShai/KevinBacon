@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 
-const DISTANCE_API: string = "http://172.26.247.4:5555/calculate";
+const DISTANCE_API: string = "/api";
 
 export default function DistanceForm() {
   const [actorName, setActorName] = useState<string>("");

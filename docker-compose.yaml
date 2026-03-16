@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    volumes:
+        - /$HOME/neo4j/logs:/logs
+        - /$HOME/neo4j/config:/config
+        - /$HOME/neo4j/data:/data
+        - /$HOME/neo4j/plugin:/plugins
+    environment:
+        - NEO4J_AUTH=neo4j/ForgetMeN0t
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  
+  db_init:
+    image: db_init
+    build:
+      context: ./db_init_container 
+      dockerfile: Dockerfile.yaml
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+        - NEO4J_AUTH=neo4j/ForgetMeN0t
+
+  bacon_server:
+    image: bacon_server
+    build:
+      context: ./server_container
+      dockerfile: Dockerfile.yaml
+    depends_on:
+      db_init:
+        condition: service_completed_successfully
+    environment:
+        - NEO4J_AUTH=neo4j/ForgetMeN0t
+    restart: always
+
+  bacon_frontend:
+    image: bacon_frontend
+    build:
+      context: ./frontend_container
+      dockerfile: Dockerfile.yaml
+    depends_on:
+      bacon_server:
+        condition: service_started
+    restart: always
+    ports:
+      - "80:80"

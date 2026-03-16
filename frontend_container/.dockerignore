@@ -1,0 +1,20 @@
+node_modules/
+dist/
+out/
+.tmp/
+.cache/
+ 
+# =========================================
+# Vite, Webpack, and React-specific artifacts
+# =========================================
+.vite/
+.vitepress/
+.eslintcache
+.npm/
+coverage/
+jest/
+cypress/
+cypress/screenshots/
+cypress/videos/
+reports/
+ 

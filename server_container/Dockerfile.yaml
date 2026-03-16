@@ -1,0 +1,9 @@
+FROM python:3.8-slim
+
+
+COPY bacon_server /bacon_server
+
+RUN pip3 install -e /bacon_server
+
+CMD [ "python3", "-u", "-m", "bacon_server" ]
+
