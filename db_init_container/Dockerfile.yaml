@@ -1,0 +1,13 @@
+FROM python:3.8-slim
+
+RUN mkdir /processed_dataset
+
+COPY raw_dataset/ /raw_dataset
+
+COPY db_initializer /db_initializer
+
+RUN pip3 install -e /db_initializer
+
+CMD [ "python3", "-u", "-m", "db_initializer" ]
+
+
