@@ -5,7 +5,7 @@ from neo4j import Driver
 from typing import Optional
 
 
-def get_auth_from_env() -> Tuple[str]:
+def get_auth_from_env() -> Tuple[str, str]:
     """
     Gets the username and password for the db
     Raises:
@@ -20,7 +20,8 @@ def get_auth_from_env() -> Tuple[str]:
     if neo4j_auth is None:
         raise KeyError("No auth env var is defined!")
     else:
-        return tuple(neo4j_auth.split("/"))
+        username, password = neo4j_auth.split("/", 1)
+        return username, password
 
 
 def calculate_bacon_distance(connection: Driver, source: str) -> Optional[float]:
@@ -33,6 +34,7 @@ def calculate_bacon_distance(connection: Driver, source: str) -> Optional[float]
         float: The distance from source to Kevin Baccon. If no path return inf.
     """
     from consts import DATABASE, KEVIN_BACON_ID
+
     try:
         with connection.session(database=DATABASE) as session:
             query = """

@@ -1,0 +1,10 @@
+FROM python:3.8-slim
+
+
+COPY db_writer /db_writer
+
+RUN pip3 install -e /db_writer
+
+CMD [ "python3", "-u", "-m", "db_writer" ]
+
+
