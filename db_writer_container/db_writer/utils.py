@@ -9,9 +9,9 @@ def get_auth_from_env() -> Tuple[str, str]:
         KeyError: If no env var for this exists, raise an error.
 
     Returns:
-        Tuple[str, str]: (username, password)
+        Tuple[str]: (username, password)
     """
-    from consts import AUTH_ENV
+    from db_writer.consts import AUTH_ENV
 
     neo4j_auth = os.getenv(AUTH_ENV)
     if neo4j_auth is None:

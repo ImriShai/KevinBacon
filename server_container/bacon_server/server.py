@@ -8,14 +8,13 @@ from neo4j import Driver, GraphDatabase
 
 from bacon_server.consts import AUTH, PORT, URI
 
-
 RESPONSE = Tuple[str, HTTPStatus]
 
 
 app = Flask("Bacon Distance Calculator")
 CORS(app)
 
-connection: Optional[Driver]
+connection: Driver
 
 
 def start_server() -> None:
@@ -43,9 +42,12 @@ def calculate_distance() -> RESPONSE:
     Returns:
         RESPONSE: The str response and a status code. The distance if a valid name.
     """
+    global connection
+    if connection is None:
+        return "An error has accured", HTTPStatus.INTERNAL_SERVER_ERROR
     actor_name = request.get_json()["name"]
     if actor_name == "Kevin Bacon":
-        distance = 0
+        distance: Optional[float] = 0.0
     else:
         distance = calculate_bacon_distance(connection, actor_name)
     if distance is None:

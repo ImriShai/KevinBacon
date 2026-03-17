@@ -51,3 +51,30 @@ services:
     restart: always
     ports:
       - "80:80"
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - /$HOME/rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      retries: 3
+      timeout: 5s
+
+  db_writer:
+    image: db_writer
+    build:
+      context: ./db_writer_container
+      dockerfile: Dockerfile.yaml
+    depends_on:
+      db_init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    environment:
+        - NEO4J_AUTH=neo4j/ForgetMeN0t

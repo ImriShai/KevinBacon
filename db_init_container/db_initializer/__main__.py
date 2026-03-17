@@ -64,12 +64,12 @@ def generate_db() -> None:
     load_and_save_movies_actors()
     actors, movies, movies_actors = load_data(ACTORS, MOVIES, MOVIES_ACTORS)
     with GraphDatabase.driver(URI, auth=AUTH) as connection:
-        connection: Driver
         connection.verify_connectivity()
         add_actors(connection, actors)
         add_movies(connection, movies)
         create_indexes(connection)
         add_edges(connection, movies_actors)
+
 
 def add_actors(connection: Driver, actors: pd.DataFrame) -> None:
     """
@@ -113,11 +113,13 @@ def add_movies(connection: Driver, movies: pd.DataFrame) -> None:
 
 def create_indexes(connection: Driver) -> None:
     """
-    Creates indexes on Actor.id and Movie.id to speed up relationship creation.
+    Creates indexes on Actor.id,name and Movie.id,name to speed up relationship creation.
     """
     queries = [
         "CREATE INDEX actor_id_index IF NOT EXISTS FOR (a:Actor) ON (a.id)",
+        "CREATE INDEX actor_name_index IF NOT EXISTS FOR (a:Actor) ON (a.name)",
         "CREATE INDEX movie_id_index IF NOT EXISTS FOR (m:Movie) ON (m.id)",
+        "CREATE INDEX movie_name_index IF NOT EXISTS FOR (m:Movie) ON (m.name)",
     ]
 
     with connection.session(database=DATABASE) as session:
@@ -137,15 +139,13 @@ def add_edges(connection: Driver, movies_actors: pd.DataFrame) -> None:
     """
     movies_actors_list = movies_actors.to_dict("records")
 
-    query = (
-        query
-    ) = """
-        UNWIND $rows AS row
-        CALL (row) {
-            MATCH (a:Actor {id: row.actor_id})
-            MATCH (m:Movie {id: row.movie_id})
-            MERGE (a)-[:PLAYS_IN]->(m)
-        } IN TRANSACTIONS OF 1000 ROWS
+    query = """
+            UNWIND $rows AS row
+            CALL (row) {
+                MATCH (a:Actor {id: row.actor_id})
+                MATCH (m:Movie {id: row.movie_id})
+                MERGE (a)-[:PLAYS_IN]->(m)
+            } IN TRANSACTIONS OF 1000 ROWS
         """
     with connection.session(database=DATABASE) as session:
         summary = session.run(query, rows=movies_actors_list).consume()
@@ -156,7 +156,7 @@ def add_edges(connection: Driver, movies_actors: pd.DataFrame) -> None:
 
 def load_data(
     actors: Path, movies: Path, movies_actors: Path, base_dir=PROCESSED_DATASET
-) -> Tuple[pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Given tha paths of the dataset, returns a dataframe for each one
     Args:
