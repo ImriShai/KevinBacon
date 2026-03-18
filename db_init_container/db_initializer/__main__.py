@@ -180,22 +180,26 @@ def test_neo() -> bool:
     Returns:
         bool: True if the distance is as expected, otherwise False.
     """
-    connection = GraphDatabase.driver(URI, auth=AUTH)
-    with connection.session(database=DATABASE) as session:
-        test_query = """
-                    MATCH (source:Actor {id: $kevin_id}), (target:Actor {id: $test_id})
-                    MATCH p = shortestPath((source)-[*]-(target))
-                    RETURN length(p) AS distance  
-                    """
-        result = session.execute_read(
-            lambda tx: tx.run(
-                test_query, kevin_id=KEVIN_BACON_ID, test_id=TEST_ID
-            ).single()
-        )
-        if result and result["distance"] / 2 == REQUIRED_RESULT:
-            return True
-        else:
-            return False
+    while True:
+        try:
+            connection = GraphDatabase.driver(URI, auth=AUTH)
+            with connection.session(database=DATABASE) as session:
+                test_query = """
+                            MATCH (source:Actor {id: $kevin_id}), (target:Actor {id: $test_id})
+                            MATCH p = shortestPath((source)-[*]-(target))
+                            RETURN length(p) AS distance  
+                            """
+                result = session.execute_read(
+                    lambda tx: tx.run(
+                        test_query, kevin_id=KEVIN_BACON_ID, test_id=TEST_ID
+                    ).single()
+                )
+                if result and result["distance"] / 2 == REQUIRED_RESULT:
+                    return True
+                else:
+                    return False
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
