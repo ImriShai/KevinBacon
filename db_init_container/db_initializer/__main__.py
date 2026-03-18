@@ -1,10 +1,24 @@
-from math import ceil
 from pathlib import Path
+from time import sleep
 from typing import Tuple
 
 import pandas as pd
 from neo4j import GraphDatabase, Driver
-from consts import *
+from consts import (
+    AUTH,
+    DATABASE,
+    KEVIN_BACON_ID,
+    MOVIES,
+    MOVIES_ACTORS,
+    NUM_ROWS,
+    ACTORS,
+    PROCESSED_DATASET,
+    RAW_DATASET,
+    REQUIRED_RESULT,
+    SKIP_ROWS,
+    TEST_ID,
+    URI,
+)
 
 
 def load_and_save_actors() -> None:
@@ -198,8 +212,14 @@ def test_neo() -> bool:
                     return True
                 else:
                     return False
+
         except Exception as e:
-            print(e)
+            print(f"An exception has accured: {e}")
+            print("Trying again in 5 seconds!")
+            sleep(5)
+
+        finally:
+            connection.close()
 
 
 if __name__ == "__main__":

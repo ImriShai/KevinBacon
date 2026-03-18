@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: neo4j
+  labels:
+    io.kompose.service: service-neo4j
+spec:
+  serviceName: "service-neo4j"
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: service-neo4j
+  template:
+    metadata:
+      labels:
+        io.kompose.service: service-neo4j
+    spec:
+      containers:
+        - name: neo4j
+          image: neo4j:latest
+          env:
+            - name: NEO4J_AUTH
+              value: "neo4j/ForgetMeN0t"
+          ports:
+            - containerPort: 7687
+              name: bolt
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7687
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: logs
+              mountPath: /logs
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+            - name: plugins
+              mountPath: /plugins
+  volumeClaimTemplates:
+    - metadata:
+        name: logs
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: config
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+    - metadata:
+        name: plugins
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

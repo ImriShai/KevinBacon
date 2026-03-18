@@ -3,14 +3,10 @@ resources:
   - db_writer_container/db-writer-deployment.yaml
   - frontend_container/bacon_frontend-service.yaml
   - frontend_container/bacon-frontend-deployment.yaml
-  - neo4j_container/neo4j-claim0-persistentvolumeclaim.yaml
-  - neo4j_container/neo4j-claim1-persistentvolumeclaim.yaml
-  - neo4j_container/neo4j-claim2-persistentvolumeclaim.yaml
-  - neo4j_container/neo4j-claim3-persistentvolumeclaim.yaml
   - neo4j_container/neo4j-service.yaml
-  - neo4j_container/neo4j-deployment.yaml
-  - rabbitmq_container/rabbitmq-claim0-persistentvolumeclaim.yaml
-  - rabbitmq_container/rabbitmq-deployment.yaml
+  - neo4j_container/neo4j-statefulset.yaml
+  - rabbitmq_container/rabbitmq-statefulset.yaml
   - rabbitmq_container/rabbitmq-service.yaml
   - server_container/bacon-server-deployment.yaml
   - server_container/bacon-server-service.yaml
+namespace: bacon-distance
