@@ -15,9 +15,9 @@ export default defineConfig({
   origin: "http://0.0.0.0:80",
   proxy: {
       '/api': {
-        target: 'http://bacon_server:5000/calculate', // Backend server
-        changeOrigin: true, // Ensure the request appears to come from the frontend server
-        rewrite: (path) => path.replace(/^\/api/, ''), // Optional: Remove '/api' prefix
+        target: 'http://bacon-server:5000/calculate',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''), 
       },
  },
 }});

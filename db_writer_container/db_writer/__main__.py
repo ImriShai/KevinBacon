@@ -1,3 +1,4 @@
+from time import sleep
 from typing import List, TypedDict
 
 import pika
@@ -105,10 +106,23 @@ def main() -> None:
 
                 print("Listening to new movies queue")
                 channel.start_consuming()
+
+            except Exception as e:
+                print(f"An exception has accured while trying to connect to queue: {e}")
+                print("Trying again in 5 seconds!")
+                sleep(5)
+
             finally:
                 channel.close()
                 connection.close()
 
 
 if __name__ == "__main__":
-    main()
+    while True:
+        try:
+            main()
+
+        except Exception as e:
+            print(f"An exception has accured while trying to connect to db: {e}")
+            print("Trying again in 5 seconds!")
+            sleep(5)

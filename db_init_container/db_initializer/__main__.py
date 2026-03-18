@@ -1,10 +1,24 @@
-from math import ceil
 from pathlib import Path
+from time import sleep
 from typing import Tuple
 
 import pandas as pd
 from neo4j import GraphDatabase, Driver
-from consts import *
+from consts import (
+    AUTH,
+    DATABASE,
+    KEVIN_BACON_ID,
+    MOVIES,
+    MOVIES_ACTORS,
+    NUM_ROWS,
+    ACTORS,
+    PROCESSED_DATASET,
+    RAW_DATASET,
+    REQUIRED_RESULT,
+    SKIP_ROWS,
+    TEST_ID,
+    URI,
+)
 
 
 def load_and_save_actors() -> None:
@@ -180,22 +194,32 @@ def test_neo() -> bool:
     Returns:
         bool: True if the distance is as expected, otherwise False.
     """
-    connection = GraphDatabase.driver(URI, auth=AUTH)
-    with connection.session(database=DATABASE) as session:
-        test_query = """
-                    MATCH (source:Actor {id: $kevin_id}), (target:Actor {id: $test_id})
-                    MATCH p = shortestPath((source)-[*]-(target))
-                    RETURN length(p) AS distance  
-                    """
-        result = session.execute_read(
-            lambda tx: tx.run(
-                test_query, kevin_id=KEVIN_BACON_ID, test_id=TEST_ID
-            ).single()
-        )
-        if result and result["distance"] / 2 == REQUIRED_RESULT:
-            return True
-        else:
-            return False
+    while True:
+        try:
+            connection = GraphDatabase.driver(URI, auth=AUTH)
+            with connection.session(database=DATABASE) as session:
+                test_query = """
+                            MATCH (source:Actor {id: $kevin_id}), (target:Actor {id: $test_id})
+                            MATCH p = shortestPath((source)-[*]-(target))
+                            RETURN length(p) AS distance  
+                            """
+                result = session.execute_read(
+                    lambda tx: tx.run(
+                        test_query, kevin_id=KEVIN_BACON_ID, test_id=TEST_ID
+                    ).single()
+                )
+                if result and result["distance"] / 2 == REQUIRED_RESULT:
+                    return True
+                else:
+                    return False
+
+        except Exception as e:
+            print(f"An exception has accured: {e}")
+            print("Trying again in 5 seconds!")
+            sleep(5)
+
+        finally:
+            connection.close()
 
 
 if __name__ == "__main__":

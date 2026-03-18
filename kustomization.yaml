@@ -1,0 +1,12 @@
+resources:
+  - db_init_container/db-init-job.yaml
+  - db_writer_container/db-writer-deployment.yaml
+  - frontend_container/bacon_frontend-service.yaml
+  - frontend_container/bacon-frontend-deployment.yaml
+  - neo4j_container/neo4j-service.yaml
+  - neo4j_container/neo4j-statefulset.yaml
+  - rabbitmq_container/rabbitmq-statefulset.yaml
+  - rabbitmq_container/rabbitmq-service.yaml
+  - server_container/bacon-server-deployment.yaml
+  - server_container/bacon-server-service.yaml
+namespace: bacon-distance
