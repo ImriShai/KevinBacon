@@ -5,8 +5,10 @@ from flask import Flask, request
 from flask_cors import CORS
 from http import HTTPStatus
 from neo4j import Driver, GraphDatabase
-
-from bacon_server.consts import AUTH, PORT, URI
+import pika
+from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
+from pika.spec import Basic, BasicProperties
+from bacon_server.consts import AUTH, PORT, RABBIT_HOST, RABBIT_QUEUE, URI
 
 RESPONSE = Tuple[str, HTTPStatus]
 
@@ -15,15 +17,26 @@ app = Flask("Bacon Distance Calculator")
 CORS(app)
 
 connection: Driver
+queue_connection: BlockingConnection
+queue_channel: BlockingChannel
 
 
 def start_server() -> None:
     """
     Calls the server initalizer then runs it.
     """
-    global connection
-    with GraphDatabase.driver(URI, auth=AUTH) as connection:
-        app.run("0.0.0.0", PORT, debug=True)
+    global connection, queue_connection, queue_channel
+    try:
+        with GraphDatabase.driver(URI, auth=AUTH) as connection:
+            queue_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=RABBIT_HOST)
+            )
+            queue_channel = queue_connection.channel()
+            queue_channel.queue_declare(queue=RABBIT_QUEUE, durable=True)
+            app.run("0.0.0.0", PORT, debug=True)
+    finally:
+        queue_channel.close()
+        queue_connection.close()
 
 
 @app.get("/ping")
@@ -65,3 +78,27 @@ def calculate_distance() -> RESPONSE:
             f"The distacne from Kevin Bacon to {actor_name} is: {int(distance)}",
             HTTPStatus.OK,
         )
+
+
+@app.post("/new-movie")
+def send_new_movie() -> RESPONSE:
+    """
+    A callback for when the /new-movie endpoint recives a request.
+    It sends the new-movies queue a request for new movie.
+    Returns:
+        RESPONSE: The str response and a status code. OK if sent succesfully to queue.
+    """
+    global queue_channel
+    data = request.data
+    try:
+        queue_channel.basic_publish(
+            exchange="",
+            routing_key=RABBIT_QUEUE,
+            body=data,
+            properties=pika.BasicProperties(
+                delivery_mode=pika.DeliveryMode.Persistent,
+            ),
+        )
+        return "Added to database", HTTPStatus.OK
+    except Exception as e:
+        return f"An error has accured: {e}", HTTPStatus.INTERNAL_SERVER_ERROR

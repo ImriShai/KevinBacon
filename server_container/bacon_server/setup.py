@@ -5,5 +5,5 @@ setup(
     author="Imri Shai",
     version="1.0",
     packages=find_packages(),
-    install_requires=["flask", "flask_cors", "neo4j"],
+    install_requires=["flask", "flask_cors", "neo4j", "pika"],
 )

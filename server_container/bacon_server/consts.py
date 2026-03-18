@@ -6,3 +6,5 @@ AUTH_ENV = "NEO4J_AUTH"
 DATABASE = "neo4j"
 AUTH = get_auth_from_env()
 PORT = 5000
+RABBIT_QUEUE = "new_movies"
+RABBIT_HOST = "rabbitmq"
